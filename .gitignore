@@ -107,7 +107,7 @@ ENV/
 .vscode/
 
 # @ddorn stuff and tests
-ddorn/
+ddorn
 
 # asciidots installation
 libs

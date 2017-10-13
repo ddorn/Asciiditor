@@ -1,0 +1,7 @@
+class COLORS:
+    BACKGROUND = 39, 40, 34
+    TEXT = 248, 248, 242
+
+def use():
+    COLORS.BACKGROUND = 39, 40, 34
+    COLORS.TEXT = 248, 248, 242

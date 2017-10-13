@@ -99,3 +99,16 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# jetbrain
+.idea/
+
+# vs code
+.vscode/
+
+# @ddorn stuff and tests
+ddorn/
+
+# asciidots installation
+libs
+dots

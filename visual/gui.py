@@ -6,6 +6,7 @@ import pygame.gfxdraw
 
 from data_structures.sparsemap import Map
 from data_structures.vector import Pos
+from helper.timer import repeat_every
 from visual.colors import COLORS
 from visual.font import Font
 
@@ -31,9 +32,10 @@ BIGFONT = Font(FONTNAME, DEFAULT_FONT_SIZE * 2)
 class Asciiditor:
     FPS = 60
 
-    def __init__(self, map_):
+    def __init__(self, file_name):
 
-        self.map = map_  # type: Map
+        self.file_name = file_name
+        self.map = self.load(file_name)
 
         self.screen = self.get_screen()  # type: pygame.SurfaceType
         self.clock = pygame.time.Clock()
@@ -46,6 +48,8 @@ class Asciiditor:
         self.cursor = Pos(0, 0)
 
         self.exit = False
+
+        repeat_every(10)(self.save)
 
     # Get stuff
 
@@ -60,16 +64,24 @@ class Asciiditor:
         x, y = pygame.mouse.get_pos()
         return Pos(x, y)
 
-    # Core functions
+    # Core gui functions
 
     def run(self):
-        """Start the debugger. stop it with `self.exit = True`"""
-        while not self.exit:
-            self.update()
-            self.render()
-            pygame.display.update(self.dirty_rects)
-            self.clock.tick(self.FPS)
-            self.dirty_rects = []
+        """Start the debugger. stop it with `self.quit()`"""
+        try:
+            while not self.exit:
+                self.update()
+                self.render()
+                pygame.display.update(self.dirty_rects)
+                self.clock.tick(self.FPS)
+                self.dirty_rects = []
+        except BaseException:
+            self.quit()
+            raise 
+
+    def quit(self):
+        self.exit = True
+        self.save()
 
     def update(self):
 
@@ -77,12 +89,11 @@ class Asciiditor:
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
-                self.exit = 1
-                return
+                return self.quit()
+
             elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
-                    self.exit = 1
-                    return
+                    return self.quit()
                 elif e.key == pygame.K_RIGHT:
                     self.move_cursor(1, 0)
                 elif e.key == pygame.K_LEFT:
@@ -102,6 +113,8 @@ class Asciiditor:
                         self.change_font_size(1)
                     elif e.key == pygame.K_MINUS:
                         self.change_font_size(-1)
+                    elif e.key == pygame.K_s:
+                        self.save()
                 else:
                     s = e.unicode  # type: str
                     if s and s.isprintable():
@@ -213,3 +226,27 @@ class Asciiditor:
 
     def screen_to_map_pos(self, pos):
         return (pos[0] - self.offset.x) // MAINFONT.char_size.x, (pos[1] - self.offset.y) // MAINFONT.char_size.y
+
+    # File functionnalities
+
+    def save(self, file_name=None):
+        """Save the file. file_name defaults to self.file_name"""
+
+        # Allow use an other file for a "Save As"option
+        file_name = file_name or self.file_name
+        with open(file_name, 'w', encoding='utf-8') as f:
+            f.write(self.map[:, :])
+
+        print("File saved at {}".format(file_name))
+
+    def load(self, file_name=None):
+        """Load or create the file at file_name (defaults to self.file_name."""
+        file_name = file_name or self.file_name
+
+        # create it if it doesn't exists
+        if not os.path.exists(file_name):
+            with open(file_name, 'w') as f:
+                f.write('')
+
+        with open(file_name, 'r', encoding='utf-8') as f:
+            return Map(f.read())

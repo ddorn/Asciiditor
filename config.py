@@ -10,6 +10,7 @@ class Config(configlib.Config):
 
     debugger_command = 'python path/to/debugger.py {file}'
     __debugger_command_hint__ = "Command to run Asciidots debugger"
+    __debugger_command_type__ = configlib.path
 
     console_log_level = 10
     __console_log_level_type__ = int

@@ -42,6 +42,9 @@ import click
 import glob
 import json
 import readline
+from pathlib import Path
+
+HOME = str(Path.home())
 
 
 def is_config_field(attr: str):
@@ -62,12 +65,15 @@ def get_field_type(config: 'Config', field: str):
 def prompt_file(prompt, default=None):
     """Prompt a file name with autocompletion"""
 
-    def complete(text, state):
-        sugg = (glob.glob(text + '*'))[state]
+    def complete(text: str, state):
+        text = text.replace('~', HOME)
+
+        sugg = (glob.glob(text + '*') + [None])[state]
 
         if sugg is None:
             return
 
+        sugg = sugg.replace(HOME, '~')
         sugg = sugg.replace('\\', '/')
 
         if os.path.isdir(sugg) and not sugg.endswith('/'):
@@ -86,10 +92,19 @@ def prompt_file(prompt, default=None):
 
     r = r or default
 
-    # remove the autocompletionbe before quitting for future input()
+    # remove the autocompletion before quitting for future input()
     readline.parse_and_bind('tab: self-insert')
 
     return r
+
+
+class MetaPathClass(type):
+    def __instancecheck__(self, instance):
+        return isinstance(instance, str)
+
+class path(str, metaclass=MetaPathClass):
+    """Class that represent a path for type hinting of your config"""
+
 
 
 class Config(object):
@@ -170,7 +185,7 @@ def update_config(config):
             type_ = getattr(config, '__' + field + '_type__', type(config[field]))
             hint = getattr(config, '__' + field + '_hint__', field) + ' ({})'.format(type_.__name__)
 
-            if represent_path(field):
+            if represent_path(field) or type_ is path:
                 config[field] = prompt_file(hint, default=config[field])
             else:
                 while True:

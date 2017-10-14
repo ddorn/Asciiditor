@@ -132,8 +132,8 @@ class Asciiditor:
                         self.offset = self.get_default_offset()
                         self.start_drag_pos = None
                         self.start_drag_offset = None
-
-                        self.change_font_size(DEFAULT_FONT_SIZE)
+                        self.cursor = Pos(0, 0)
+                        self.set_font_size(DEFAULT_FONT_SIZE)
                     elif e.key == pygame.K_EQUALS:  # I would like the + but apparently it doesn't work
                         self.change_font_size(1)
                     elif e.key == pygame.K_MINUS:

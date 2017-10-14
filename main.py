@@ -1,17 +1,17 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 import logging
 from logging.handlers import RotatingFileHandler
 
 import click
 
+import config
 from visual import gui
 
-CONSOLE_LOG_LEVEL = logging.DEBUG
 FILE_LOG_LEVEL = logging.INFO
 
-def setup_logging():
+
+def setup_logging(console_level):
     # Thanks to  http://sametmax.com/ecrire-des-logs-en-python/
     # création de l'objet logger qui va nous servir à écrire dans les logs
     logger = logging.getLogger()
@@ -33,19 +33,19 @@ def setup_logging():
     # création d'un second handler qui va rediriger chaque écriture de log
     # sur la console
     stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(CONSOLE_LOG_LEVEL)
+    stream_handler.setLevel(console_level)
     logger.addHandler(stream_handler)
 
 
 @click.command()
 @click.argument('file')
-@click.option('--retina', is_flag=True, default=False)
-def main(file: str, retina: bool):
-    setup_logging()
+def main(file: str):
+    conf = config.Config()
+    setup_logging(conf.console_log_level)
 
     logging.info('Starting editor with %s', file)
 
-    editor = gui.Asciiditor(file, retina)
+    editor = gui.Asciiditor(file, conf)
     editor.run()
 
     logging.info('Editor closed')

@@ -5,6 +5,7 @@ from functools import lru_cache
 import pygame
 import pygame.gfxdraw
 
+from config import Config
 from data_structures.sparsemap import Map
 from data_structures.vector import Pos
 from helper.timer import repeat_every
@@ -33,12 +34,12 @@ BIGFONT = Font(FONTNAME, DEFAULT_FONT_SIZE * 2)
 class Asciiditor:
     FPS = 60
 
-    def __init__(self, file_name, retina):
+    def __init__(self, file_name, conf):
 
         self.file_name = file_name
         self.map = self.load(file_name)
 
-        self.retina = retina
+        self.config = conf  # type: Config
 
         self.screen = self.get_screen()  # type: pygame.SurfaceType
         self.clock = pygame.time.Clock()
@@ -68,7 +69,7 @@ class Asciiditor:
 
     def get_screen(self):
         """Get the main screen."""
-        if self.retina:
+        if self.config.retina:
             w, h = pygame.display.list_modes()[0]
             return pygame.display.set_mode((w, h), pygame.RESIZABLE)
         else:
@@ -76,7 +77,7 @@ class Asciiditor:
 
     def get_mouse_pos(self):
         x, y = pygame.mouse.get_pos()
-        if self.retina:
+        if self.config.retina:
             x *= 2
             y *= 2
         return Pos(x, y)

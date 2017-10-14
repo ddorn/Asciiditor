@@ -1,3 +1,4 @@
+import logging
 import os
 from functools import lru_cache
 
@@ -30,6 +31,7 @@ BIGFONT = Font(FONTNAME, DEFAULT_FONT_SIZE * 2)
 
 
 class Asciiditor:
+
     FPS = 60
 
     def __init__(self, file_name, retina):
@@ -52,6 +54,13 @@ class Asciiditor:
         self.exit = False
 
         repeat_every(10)(self.save)
+
+        # Log if the FPS drops
+        @repeat_every(1, start_offset=1)
+        def get_fps():
+            fps = self.clock.get_fps()
+            if fps < self.FPS / 2:
+                logging.warning('Low fps: %s', fps)
 
     # Get stuff
 
@@ -83,7 +92,7 @@ class Asciiditor:
                 self.dirty_rects = []
         except BaseException:
             self.quit()
-            raise 
+            raise
 
     def quit(self):
         self.exit = True
@@ -108,6 +117,13 @@ class Asciiditor:
                     self.move_cursor(0, -1)
                 elif e.key == pygame.K_DOWN:
                     self.move_cursor(0, 1)
+                elif e.key == pygame.K_RETURN:
+                    self.move_cursor(0, 1)
+                elif e.key == pygame.K_BACKSPACE:
+                    self.move_cursor(-1, 0)
+                    del self.map[self.cursor.row, self.cursor.col]
+                elif e.key == pygame.K_DELETE:
+                    del self.map[self.cursor.row, self.cursor.col]
                 elif e.mod & pygame.KMOD_CTRL:
                     if e.key == pygame.K_r:  # reset position and size
                         self.offset = self.get_default_offset()
@@ -124,7 +140,6 @@ class Asciiditor:
                 else:
                     s = e.unicode  # type: str
                     if s and s.isprintable():
-                        print('-', e.unicode, '-', ord(e.unicode), sep='')
                         self.map[self.cursor.row, self.cursor.col] = s
                         self.move_cursor(1, 0)
                         self.reset_screen()
@@ -211,9 +226,10 @@ class Asciiditor:
         self.set_font_size(MAINFONT.font_size + dsize)
 
     def set_font_size(self, size):
-        MAINFONT.change_size(size)
+        MAINFONT.set_size(size)
         BIGFONT.set_size(size * 2)
         SMALLFONT.set_size(size * 0.75)
+        logging.info('Main font size changed to %s', MAINFONT.font_size)
         self.map_to_screen_pos.cache_clear()
         self.reset_screen()
 
@@ -243,16 +259,23 @@ class Asciiditor:
         with open(file_name, 'w', encoding='utf-8') as f:
             f.write(self.map[:, :])
 
-        print("File saved at {}".format(file_name))
+        logging.info('File saved at %s', file_name)
 
     def load(self, file_name=None):
         """Load or create the file at file_name (defaults to self.file_name."""
+
         file_name = file_name or self.file_name
+        logging.info('start loading %s', file_name)
 
         # create it if it doesn't exists
         if not os.path.exists(file_name):
             with open(file_name, 'w') as f:
                 f.write('')
+            logging.info("%s didn't exist and was created", file_name)
 
         with open(file_name, 'r', encoding='utf-8') as f:
-            return Map(f.read())
+            map_ = Map(f.read())
+
+        logging.info('%s load success', file_name)
+
+        return map_

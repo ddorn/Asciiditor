@@ -111,6 +111,13 @@ class Asciiditor:
                     self.move_cursor(0, -1)
                 elif e.key == pygame.K_DOWN:
                     self.move_cursor(0, 1)
+                elif e.key == pygame.K_RETURN:
+                    self.move_cursor(0, 1)
+                elif e.key == pygame.K_BACKSPACE:
+                    self.move_cursor(-1, 0)
+                    del self.map[self.cursor.row, self.cursor.col]
+                elif e.key == pygame.K_DELETE:
+                    del self.map[self.cursor.row, self.cursor.col]
                 elif e.mod & pygame.KMOD_CTRL:
                     if e.key == pygame.K_r:  # reset position and size
                         self.offset = self.get_default_offset()

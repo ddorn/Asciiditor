@@ -7,7 +7,7 @@ Comme to talk on [gitter](https://gitter.im/asciidots/Lobby) ! :D
 You just need the dependancies and the repo
     
     pip install click sortedcontainers pygame
-    git clone https://github.com/ddorn/Asciiditor
+    git clone https://github.com/ddorn/Asciiditor.git
     
 You can then try it
 

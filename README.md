@@ -13,12 +13,40 @@ You can then try it
 
     python main.py FILE
     
-(it is <kbd>Escape</kbd> to quit)
+### Configuration
+
+Asciiditor is configurable, you just need to run. Note for windows users, you need `pyreadline` that you can install through `pip install pyreadline`.
+    
+    python config.py
+    
+The options are self explicatives, but if it's not clear, you can open an issue, 
+I'll have a pleasure to explain better.
+ 
+### Controls
+
+Pygame beiing designed first for games, it is harder to create 
+graphical interfaces like your favourites IDEs, 
+however, this IDE is keyboard centered, so there are a lot of shortcuts to 
+do what you want. Here is an often updated exaustive list.
+
+- <kbd>Escape</kbd>: Quit the editor
+- <kbd>F5</kbd>: Start the debugger with the current code
+- <kbd>Ctrl S</kbd>: Save
+- <kbd>Ctrl R</kbd>: Reset view, sixe, position when you are lost
+- <kbd>Ctrl +</kbd>: Increase font size
+- <kbd>Ctrl -</kbd>: Decrease font size
+- <kbd>Drag left click</kbd>: Move the code around
+
+No need to comment
+- <kbd>Left</kbd>, <kbd>Right</kbd>, <kbd>Up</kbd>, <kbd>Down</kbd>: I said it will be exautive !
+- <kbd>Delete</kbd>: Remove under the cursor 
+- <kbd>Backspace</kbd>: Remove before the cursor
+- <kbd>Click</kbd>: Set the cursor position
+- <kbd>
 
 
-### Functionnalities
+### Comming soon (more or less)
 
-- Override cursor mode
-- Save (and autosave every 10s)
-- change font size
-- Drag the code around the place
+- Syntax coloration
+- autocompletion for librairies names
+- Path designer

@@ -39,13 +39,13 @@ def setup_logging():
 
 @click.command()
 @click.argument('file')
-def main(file: str):
-
+@click.option('--retina', is_flag=True, default=False)
+def main(file: str, retina: bool):
     setup_logging()
 
     logging.info('Starting editor with %s', file)
 
-    editor = gui.Asciiditor(file)
+    editor = gui.Asciiditor(file, retina)
     editor.run()
 
     logging.info('Editor closed')

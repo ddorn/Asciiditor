@@ -11,5 +11,9 @@ class Config(configlib.Config):
     debugger_path = ''
     __debugger_path_hint__ = "Path to your AsciiDotsDebugger"
 
+    console_log_level = 10
+    __console_log_level_type__ = int
+    __console_log_level_hint__ = "Debug level in the console between 10 and 50"
+
 if __name__ == '__main__':
-    configlib.update_config(Config())
+    configlib.update_config(Config)

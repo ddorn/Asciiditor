@@ -95,6 +95,9 @@ def prompt_file(prompt, default=None):
 class Config(object):
     __config_path__ = 'config.json'
 
+    def __init__(self, raise_on_fail=True):
+        self.__load__(raise_on_fail)
+
     def __iter__(self):
         """Iterate over the fields"""
         for attr in type(self).__dict__:
@@ -140,8 +143,8 @@ class Config(object):
         return self.__getattribute__(item)
 
 
-def update_config(config: Config):
-    config.__load__(raise_on_fail=False)
+def update_config(config):
+    config = config(raise_on_fail=False)  # type: Config
 
     print()
     print('Welcome !')

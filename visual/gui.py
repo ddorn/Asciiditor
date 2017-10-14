@@ -77,7 +77,10 @@ class Asciiditor:
 
     def get_mouse_pos(self):
         x, y = pygame.mouse.get_pos()
-        return Pos(x, y)
+        if self.retina:
+            x *= 2
+            y *= 2
+        return (x, y)
 
     # Core gui functions
 
@@ -146,7 +149,7 @@ class Asciiditor:
 
             elif e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1:
-                    self.set_cursor(*self.screen_to_map_pos(pygame.mouse.get_pos()))
+                    self.set_cursor(*self.screen_to_map_pos(self.get_mouse_pos()))
                 elif e.button == 3:
                     self.start_drag_pos = mouse
                     self.start_drag_offset = self.offset

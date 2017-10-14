@@ -1,5 +1,5 @@
 from _thread import start_new_thread
-from time import sleep
+from time import sleep, time
 
 
 def repeat_every(seconds, start_offset=0, ignore_exceptions=False):
@@ -15,20 +15,23 @@ def repeat_every(seconds, start_offset=0, ignore_exceptions=False):
     def decorator_every_something(f):
 
         # they should be accessible from outside so the user can stop it
-        f.stop = False
-        f.interval = seconds
-        f.ignore_exceptions = ignore_exceptions
+        stop = False
+        interval = seconds
 
         def repeater():
+            nonlocal stop, interval, ignore_exceptions
+
             sleep(start_offset)
-            while not f.stop:
+            while not stop:
                 try:
                     f()
-                except Exception:
-                    if not f.ignore_exceptions:
+                except Exception as e:
+                    print("{:10f}, {}".format(time(), e))
+                    if not ignore_exceptions:
                         raise
 
-                sleep(f.interval)
+
+                sleep(interval)
         start_new_thread(repeater, ())
 
         return f

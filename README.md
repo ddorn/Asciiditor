@@ -20,3 +20,5 @@ You can then try it
 
 - Override cursor mode
 - Save (and autosave every 10s)
+- change font size
+- Drag the code around the place

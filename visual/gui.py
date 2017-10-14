@@ -32,10 +32,12 @@ BIGFONT = Font(FONTNAME, DEFAULT_FONT_SIZE * 2)
 class Asciiditor:
     FPS = 60
 
-    def __init__(self, file_name):
+    def __init__(self, file_name, retina):
 
         self.file_name = file_name
         self.map = self.load(file_name)
+
+        self.retina = retina
 
         self.screen = self.get_screen()  # type: pygame.SurfaceType
         self.clock = pygame.time.Clock()
@@ -58,7 +60,11 @@ class Asciiditor:
 
     def get_screen(self):
         """Get the main screen."""
-        return pygame.display.set_mode((0, 0), pygame.NOFRAME)
+        if self.retina:
+            w, h = pygame.display.list_modes()[0]
+            return pygame.display.set_mode((w, h), pygame.RESIZABLE)
+        else:
+            return pygame.display.set_mode((0, 0), pygame.NOFRAME)
 
     def get_mouse_pos(self):
         x, y = pygame.mouse.get_pos()

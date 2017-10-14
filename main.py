@@ -6,8 +6,9 @@ from visual import gui
 
 @click.command()
 @click.argument('file')
-def main(file: str):
-    editor = gui.Asciiditor(file)
+@click.option('--retina', is_flag=True, default=False)
+def main(file: str, retina: bool):
+    editor = gui.Asciiditor(file, retina)
     editor.run()
 
 

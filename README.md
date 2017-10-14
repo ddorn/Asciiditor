@@ -14,3 +14,9 @@ You can then try it
     python main.py FILE
     
 (it is <kbd>Escape</kbd> to quit)
+
+
+### Functionnalities
+
+- Override cursor mode
+- Save (and autosave every 10s)

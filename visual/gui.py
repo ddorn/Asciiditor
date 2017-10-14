@@ -1,5 +1,7 @@
 import logging
+import multiprocessing
 import os
+from concurrent.futures import process
 from functools import lru_cache
 
 import pygame
@@ -127,6 +129,8 @@ class Asciiditor:
                     del self.map[self.cursor.row, self.cursor.col]
                 elif e.key == pygame.K_DELETE:
                     del self.map[self.cursor.row, self.cursor.col]
+                elif e.key == pygame.K_F5:
+                    self.lunch_debugger()
                 elif e.mod & pygame.KMOD_CTRL:
                     if e.key == pygame.K_r:  # reset position and size
                         self.offset = self.get_default_offset()
@@ -306,3 +310,14 @@ class Asciiditor:
             map_ = Map()
             logging.info("File does not exist, creating empty Map.")
         return map_
+
+    def lunch_debugger(self):
+        logging.info("Creating debugger procces")
+        p = multiprocessing.Process(target=run_cmd, args=("python {} {}".format(self.config.debugger_path, self.file_name),))
+        logging.info("Starting debugger process")
+        p.start()
+        logging.info("Debugger started")
+
+def run_cmd(cmd: str):
+    logging.info("running %s", cmd)
+    os.system(cmd)

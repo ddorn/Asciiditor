@@ -25,12 +25,12 @@ To use the configlib in your project, just create a file name `conf.py` awith th
 
     if __name__ == '__main__':
         # with that the user will be able to easily edit the config by running `python config.py`
-        configlib.update_config(Config())
+        configlib.update_config(Config)
 
     Then in your main code you can get the config with
 
     import config
-    myconfig = config.Config().__load__()
+    myconfig = config.Config()
 
 
 Make with love by ddorn (https://github.com/ddorn/)
@@ -149,7 +149,7 @@ def update_config(config):
     print()
     print('Welcome !')
     print('Press enter to keep the defaults or enter a new value to update the configuration.')
-    print()
+    print('Press Ctrl+C at any time to quit and save')
 
     print("The following fields are available: ")
     i = 0
@@ -163,30 +163,33 @@ def update_config(config):
     skip = click.prompt("Do you want to skip to a given number ?", 1, type=click.IntRange(1, i + 1))
     click.echo()
 
-    for i, field in enumerate(list(config)):
-        if i + 1 < skip:
-            continue
-        type_ = getattr(config, '__' + field + '_type__', type(config[field]))
-        hint = getattr(config, '__' + field + '_hint__', field) + ' ({})'.format(type_.__name__)
+    try:
+        for i, field in enumerate(list(config)):
+            if i + 1 < skip:
+                continue
+            type_ = getattr(config, '__' + field + '_type__', type(config[field]))
+            hint = getattr(config, '__' + field + '_hint__', field) + ' ({})'.format(type_.__name__)
 
-        if represent_path(field):
-            config[field] = prompt_file(hint, default=config[field])
-        else:
-            while True:
-                config[field] = click.prompt(hint, default=config[field], type=type_)
+            if represent_path(field):
+                config[field] = prompt_file(hint, default=config[field])
+            else:
+                while True:
+                    config[field] = click.prompt(hint, default=config[field], type=type_)
 
-                supposed_type = get_field_type(config, field)
-                if isinstance(config[field], supposed_type):
-                    break
+                    supposed_type = get_field_type(config, field)
+                    if isinstance(config[field], supposed_type):
+                        break
 
-                click.echo('The field ', nl=False)
-                click.secho(field, nl=False, fg='yellow')
-                click.echo(' is a ', nl=False)
-                click.secho(type(config[field]).__name__, nl=False, fg='red')
-                click.echo(' but should be ', nl=False)
-                click.secho(supposed_type.__name__, nl=False, fg='green')
-                click.echo('.')
-
-
-    config.__save__()
-
+                    click.echo('The field ', nl=False)
+                    click.secho(field, nl=False, fg='yellow')
+                    click.echo(' is a ', nl=False)
+                    click.secho(type(config[field]).__name__, nl=False, fg='red')
+                    click.echo(' but should be ', nl=False)
+                    click.secho(supposed_type.__name__, nl=False, fg='green')
+                    click.echo('.')
+    except click.exceptions.Abort:
+        config.__save__()
+        print('\nSaved !')
+    else:
+        config.__save__()
+        print('Saved !')

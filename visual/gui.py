@@ -1,3 +1,4 @@
+import logging
 import os
 from functools import lru_cache
 
@@ -77,7 +78,7 @@ class Asciiditor:
                 self.dirty_rects = []
         except BaseException:
             self.quit()
-            raise 
+            raise
 
     def quit(self):
         self.exit = True
@@ -118,7 +119,6 @@ class Asciiditor:
                 else:
                     s = e.unicode  # type: str
                     if s and s.isprintable():
-                        print('-', e.unicode, '-', ord(e.unicode), sep='')
                         self.map[self.cursor.row, self.cursor.col] = s
                         self.move_cursor(1, 0)
                         self.reset_screen()
@@ -237,16 +237,23 @@ class Asciiditor:
         with open(file_name, 'w', encoding='utf-8') as f:
             f.write(self.map[:, :])
 
-        print("File saved at {}".format(file_name))
+        logging.info('File saved at %s', file_name)
 
     def load(self, file_name=None):
         """Load or create the file at file_name (defaults to self.file_name."""
+
         file_name = file_name or self.file_name
+        logging.info('start loading %s', file_name)
 
         # create it if it doesn't exists
         if not os.path.exists(file_name):
             with open(file_name, 'w') as f:
                 f.write('')
+            logging.info("%s didn't exist and was created", file_name)
 
         with open(file_name, 'r', encoding='utf-8') as f:
-            return Map(f.read())
+            map_ = Map(f.read())
+
+        logging.info('%s load success', file_name)
+
+        return map_

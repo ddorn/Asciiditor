@@ -313,7 +313,10 @@ class Asciiditor:
 
     def lunch_debugger(self):
         logging.info("Creating debugger procces")
-        p = multiprocessing.Process(target=run_cmd, args=("python {} {}".format(self.config.debugger_path, self.file_name),))
+        p = multiprocessing.Process(target=run_cmd, args=(' '.join((
+            self.config.python3_command,
+            self.config.debugger_path,
+            self.file_name,)),))
         logging.info("Starting debugger process")
         p.start()
         logging.info("Debugger started")

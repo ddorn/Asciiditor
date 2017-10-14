@@ -43,7 +43,7 @@ class Asciiditor:
         self.clock = pygame.time.Clock()
         self.dirty_rects = [self.screen.get_rect()]
 
-        self.offset = self.get_default_offset()
+        self._offset = self.get_default_offset()
         self.start_drag_pos = None  # type: Pos
         self.start_drag_offset = None  # type: Pos
 
@@ -162,8 +162,6 @@ class Asciiditor:
                 dy = 0
 
             self.offset = self.start_drag_offset + (dx, dy)
-            self.map_to_screen_pos.cache_clear()
-            self.reset_screen()
 
     def render(self):
 
@@ -209,13 +207,39 @@ class Asciiditor:
 
     # Change cursor, font or screen
 
+    @property
+    def offset(self):
+        return self._offset
+
+    @offset.setter
+    def offset(self, value):
+        self.reset_screen()
+        self.map_to_screen_pos.cache_clear()
+        self._offset = value
+
     def move_cursor(self, dx, dy):
         self.set_cursor(*(self.cursor + (dx, dy)))
 
     def set_cursor(self, x, y):
         self.dirty_rects.append(self.map_to_screen_rect(self.cursor))
         self.cursor = Pos(x, y)
-        self.dirty_rects.append(self.map_to_screen_rect(self.cursor))
+        new_rect = pygame.Rect(self.map_to_screen_rect(self.cursor))
+        self.dirty_rects.append(new_rect)
+
+        screen_rect = self.screen.get_rect()  # type: pygame.rect.RectType
+        if new_rect.x < 0:
+            # the modulo part it to keep the grid aligned with what it was before,
+            # just changing by a mutliple of charsize
+            self.offset -= new_rect.x - new_rect.x % MAINFONT.char_size.x, 0
+        elif new_rect.right > screen_rect.right:
+            # don't ask why it works
+            self.offset += screen_rect.right - new_rect.right + new_rect.right % MAINFONT.char_size.x - MAINFONT.char_size.x, 0
+
+        if new_rect.y < 0:
+            self.offset -= 0, new_rect.y - new_rect.y % MAINFONT.char_size.y
+        elif new_rect.bottom > screen_rect.bottom:
+            self.offset += 0, ((screen_rect.bottom - new_rect.top) // MAINFONT.char_size.y - 1) * MAINFONT.char_size.y
+
 
     def change_font_size(self, dsize):
         self.set_font_size(MAINFONT.font_size + dsize)

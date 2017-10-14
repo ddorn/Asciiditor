@@ -112,3 +112,6 @@ ddorn
 # asciidots installation
 libs
 dots
+
+# workspace files
+workspace/*

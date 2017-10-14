@@ -34,10 +34,12 @@ class Asciiditor:
 
     FPS = 60
 
-    def __init__(self, file_name):
+    def __init__(self, file_name, retina):
 
         self.file_name = file_name
         self.map = self.load(file_name)
+
+        self.retina = retina
 
         self.screen = self.get_screen()  # type: pygame.SurfaceType
         self.clock = pygame.time.Clock()
@@ -67,11 +69,18 @@ class Asciiditor:
 
     def get_screen(self):
         """Get the main screen."""
-        return pygame.display.set_mode((0, 0), pygame.NOFRAME)
+        if self.retina:
+            w, h = pygame.display.list_modes()[0]
+            return pygame.display.set_mode((w, h), pygame.RESIZABLE)
+        else:
+            return pygame.display.set_mode((0, 0), pygame.NOFRAME)
 
     def get_mouse_pos(self):
         x, y = pygame.mouse.get_pos()
-        return Pos(x, y)
+        if self.retina:
+            x *= 2
+            y *= 2
+        return (x, y)
 
     # Core gui functions
 
@@ -140,7 +149,7 @@ class Asciiditor:
 
             elif e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1:
-                    self.set_cursor(*self.screen_to_map_pos(pygame.mouse.get_pos()))
+                    self.set_cursor(*self.screen_to_map_pos(self.get_mouse_pos()))
                 elif e.button == 3:
                     self.start_drag_pos = mouse
                     self.start_drag_offset = self.offset

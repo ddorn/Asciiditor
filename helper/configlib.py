@@ -44,6 +44,13 @@ import json
 import readline
 from pathlib import Path
 
+try:
+    import pygments
+    from pygments.lexers import JsonLexer
+    from pygments.formatters import TerminalFormatter
+except ImportError:
+    pygments = None
+
 HOME = str(Path.home())
 
 
@@ -197,6 +204,22 @@ def update_config(config):
 
         ctx.exit()
 
+    def show_conf(ctx, param, value):
+        if not value or ctx.resilient_parsing:
+            return
+
+        with open(config.__config_path__, 'r') as f:
+            file = f.read()
+
+        file = json.dumps(json.loads(file), indent=4, sort_keys=True)
+
+        if pygments:
+            file = pygments.highlight(file, JsonLexer(), TerminalFormatter())
+
+        click.echo()
+        click.echo(file)
+        ctx.exit()
+
     def greet():
         print()
         print('Welcome !')
@@ -233,8 +256,10 @@ def update_config(config):
 
                     warn_for_field_type(config, field)
 
+    # all option must be eager and start with only one dash, so it doesn't conflic with any possible field
     @click.command()
-    @click.option('--list', is_eager=True, is_flag=True, expose_value=False, callback=print_list, help='List the availaible configuration fields.')
+    @click.option('-list', '-l', is_eager=True, is_flag=True, expose_value=False, callback=print_list, help='List the availaible configuration fields.')
+    @click.option('-show', '-s', is_eager=True, is_flag=True, expose_value=False, callback=show_conf, help='View the configuration.')
     def command(**kwargs):
 
         try:
@@ -243,8 +268,8 @@ def update_config(config):
             if kwargs:
                 update_from_args(kwargs)
             else:
-                prompt_update_all()
                 # or update all
+                prompt_update_all()
         except click.exceptions.Abort:
             pass
         finally:

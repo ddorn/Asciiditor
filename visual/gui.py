@@ -80,7 +80,7 @@ class Asciiditor:
         if self.retina:
             x *= 2
             y *= 2
-        return (x, y)
+        return Pos(x, y)
 
     # Core gui functions
 
@@ -103,7 +103,7 @@ class Asciiditor:
 
     def update(self):
 
-        mouse = Pos(self.get_mouse_pos())
+        mouse = self.get_mouse_pos()
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -234,7 +234,7 @@ class Asciiditor:
         self.cursor = Pos(x, y)
         new_rect = pygame.Rect(self.map_to_screen_rect(self.cursor))
         self.dirty_rects.append(new_rect)
-
+        
         screen_rect = self.screen.get_rect()  # type: pygame.rect.RectType
         if new_rect.x < 0:
             # the modulo part it to keep the grid aligned with what it was before,
@@ -242,7 +242,7 @@ class Asciiditor:
             self.offset -= new_rect.x - new_rect.x % MAINFONT.char_size.x, 0
         elif new_rect.right > screen_rect.right:
             # don't ask why it works
-            self.offset += screen_rect.right - new_rect.right + new_rect.right % MAINFONT.char_size.x - MAINFONT.char_size.x, 0
+            self.offset += ((screen_rect.right - new_rect.left) // MAINFONT.char_size.x - 1) * MAINFONT.char_size.x, 0
 
         if new_rect.y < 0:
             self.offset -= 0, new_rect.y - new_rect.y % MAINFONT.char_size.y
@@ -285,9 +285,9 @@ class Asciiditor:
         # Allow use an other file for a "Save As"option
         file_name = file_name or self.file_name
         with open(file_name, 'w', encoding='utf-8') as f:
-            f.write(self.map[:, :])
+            nb_bytes = f.write(self.map[:, :])
 
-        logging.info('File saved at %s', file_name)
+        logging.info('File saved at %s. %s bytes saves', file_name, nb_bytes)
 
     def load(self, file_name=None):
         """Load or create the file at file_name (defaults to self.file_name."""

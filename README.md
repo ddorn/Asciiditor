@@ -1,11 +1,11 @@
 # Asciiditor
 This will be an editor for [Asciidots](www.github.com/aaronduino/asciidots), but you don't want to try it now, it is still in pre-pre-sub-alpha version.
-Comme to talk on [gitter](https://gitter.im/asciidots/Lobby) ! :D 
+Come to talk on [gitter](https://gitter.im/asciidots/Lobby) ! :D
 
 ### Install
 
-You just need the dependancies and the repo
     
+You just need the dependencies and the repo
     pip install click sortedcontainers pygame
     git clone https://github.com/ddorn/Asciiditor
     
@@ -19,15 +19,15 @@ Asciiditor is configurable, you just need to run. Note for windows users, you ne
     
     python config.py
     
-The options are self explicatives, but if it's not clear, you can open an issue, 
+The options are self explanatory, but if it's not clear, you can open an issue,
 I'll have a pleasure to explain better.
  
 ### Controls
 
-Pygame beiing designed first for games, it is harder to create 
-graphical interfaces like your favourites IDEs, 
-however, this IDE is keyboard centered, so there are a lot of shortcuts to 
-do what you want. Here is an often updated exaustive list.
+Pygame being designed first for games, it is harder to create
+graphical interfaces like your favourite IDEs,
+however, this IDE is keyboard centered, so there are a lot of shortcuts to
+do what you want. Here is an often updated exhaustive list.
 
 - <kbd>Escape</kbd>: Quit the editor
 - <kbd>F5</kbd>: Start the debugger with the current code
@@ -38,8 +38,8 @@ do what you want. Here is an often updated exaustive list.
 - <kbd>Drag left click</kbd>: Move the code around
 
 No need to comment
-- <kbd>Left</kbd>, <kbd>Right</kbd>, <kbd>Up</kbd>, <kbd>Down</kbd>: I said it will be exautive !
-- <kbd>Delete</kbd>: Remove under the cursor 
+- <kbd>Left</kbd>, <kbd>Right</kbd>, <kbd>Up</kbd>, <kbd>Down</kbd>: I said it will be exhaustive !
+- <kbd>Delete</kbd>: Remove under the cursor
 - <kbd>Backspace</kbd>: Remove before the cursor
 - <kbd>Click</kbd>: Set the cursor position
 - <kbd>
@@ -48,5 +48,5 @@ No need to comment
 ### Comming soon (more or less)
 
 - Syntax coloration
-- autocompletion for librairies names
+- autocompletion for libraries names
 - Path designer

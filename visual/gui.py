@@ -31,6 +31,7 @@ BIGFONT = Font(FONTNAME, DEFAULT_FONT_SIZE * 2)
 
 
 class Asciiditor:
+
     FPS = 60
 
     def __init__(self, file_name):
@@ -51,6 +52,13 @@ class Asciiditor:
         self.exit = False
 
         repeat_every(10)(self.save)
+
+        # Log if the FPS drops
+        @repeat_every(1, start_offset=1)
+        def get_fps():
+            fps = self.clock.get_fps()
+            if fps < self.FPS / 2:
+                logging.warning('Low fps: %s', fps)
 
     # Get stuff
 

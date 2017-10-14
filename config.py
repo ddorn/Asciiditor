@@ -8,8 +8,8 @@ class Config(configlib.Config):
     __retina_hint__ = "Enable retina mode ?"
     __retina_type__ = bool
 
-    debugger_path = ''
-    __debugger_path_hint__ = "Path to your AsciiDotsDebugger"
+    debugger_command = 'python path/to/debugger.py {file}'
+    __debugger_command_hint__ = "Command to run Asciidots debugger"
 
     console_log_level = 10
     __console_log_level_type__ = int

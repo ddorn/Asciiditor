@@ -58,8 +58,23 @@ def represent_path(field: str):
 
 
 def get_field_type(config: 'Config', field: str):
-    """Get the type given by __field_type__ or str if not defined"""
-    return getattr(config, '__' + field + '_type__', str)
+    """Get the type given by __field_type__ or str if not defined."""
+    return getattr(config, '__{field}_type__'.format(field=field), str)
+
+
+def get_field_hint(config, field):
+    """Get the hint given by __field_hint__ or the field name if not defined."""
+    return getattr(config, '__{field}_hint__'.format(field=field), field)
+
+
+def warn_for_field_type(config, field):
+    click.echo('The field ', nl=False)
+    click.secho(field, nl=False, fg='yellow')
+    click.echo(' is a ', nl=False)
+    click.secho(type(config[field]).__name__, nl=False, fg='red')
+    click.echo(' but should be ', nl=False)
+    click.secho(get_field_type(config, field).__name__, nl=False, fg='green')
+    click.echo('.')
 
 
 def prompt_file(prompt, default=None):
@@ -101,6 +116,7 @@ def prompt_file(prompt, default=None):
 class MetaPathClass(type):
     def __instancecheck__(self, instance):
         return isinstance(instance, str)
+
 
 class path(str, metaclass=MetaPathClass):
     """Class that represent a path for type hinting of your config"""
@@ -151,6 +167,10 @@ class Config(object):
         with open(self.__config_path__, 'w') as f:
             f.write(jsonstr)
 
+    def __len__(self):
+        # we can't do len(list(self)) because list uses len when it can, causing recurtion of the death
+        return sum(1 for _ in self)
+
     def __setitem__(self, key, value):
         self.__setattr__(key, value)
 
@@ -159,52 +179,80 @@ class Config(object):
 
 
 def update_config(config):
+
     config = config(raise_on_fail=False)  # type: Config
 
-    print()
-    print('Welcome !')
-    print('Press enter to keep the defaults or enter a new value to update the configuration.')
-    print('Press Ctrl+C at any time to quit and save')
+    def print_list(ctx, param, value):
+        if not value or ctx.resilient_parsing:
+            return
 
-    print("The following fields are available: ")
-    i = 0
-    for i, field in enumerate(list(config)):
-        click.echo(" - {:-3} ".format(i + 1), nl=0)
-        click.echo(field + ' (', nl=0)
-        click.secho(get_field_type(config, field).__name__, fg='yellow', nl=0)
-        click.echo(')')
-    click.echo()
-
-    skip = click.prompt("Do you want to skip to a given number ?", 1, type=click.IntRange(1, i + 1))
-    click.echo()
-
-    try:
+        print("The following fields are available: ")
+        i = 0
         for i, field in enumerate(list(config)):
-            if i + 1 < skip:
-                continue
+            click.echo(" - {:-3} ".format(i + 1), nl=0)
+            click.echo(field + ' (', nl=0)
+            click.secho(get_field_type(config, field).__name__, fg='yellow', nl=0)
+            click.echo(')')
+        click.echo()
+
+        ctx.exit()
+
+    def greet():
+        print()
+        print('Welcome !')
+        print('Press enter to keep the defaults or enter a new value to update the configuration.')
+        print('Press Ctrl+C at any time to quit and save')
+        print()
+
+    def update_from_args(kwargs):
+        for field, value in kwargs.items():
+            supposed_type = get_field_type(config, field)
+            if isinstance(value, supposed_type):
+                config[field] = value
+            else:
+                warn_for_field_type(config, field)
+
+    def prompt_update_all():
+        greet()
+        for i, field in enumerate(list(config)):
+
             type_ = getattr(config, '__' + field + '_type__', type(config[field]))
             hint = getattr(config, '__' + field + '_hint__', field) + ' ({})'.format(type_.__name__)
 
             if represent_path(field) or type_ is path:
                 config[field] = prompt_file(hint, default=config[field])
             else:
+                # ask untill we have the right type
                 while True:
-                    config[field] = click.prompt(hint, default=config[field], type=type_)
+                    value = click.prompt(hint, default=config[field], type=type_)
 
                     supposed_type = get_field_type(config, field)
-                    if isinstance(config[field], supposed_type):
+                    if isinstance(value, supposed_type):
+                        config[field] = value
                         break
 
-                    click.echo('The field ', nl=False)
-                    click.secho(field, nl=False, fg='yellow')
-                    click.echo(' is a ', nl=False)
-                    click.secho(type(config[field]).__name__, nl=False, fg='red')
-                    click.echo(' but should be ', nl=False)
-                    click.secho(supposed_type.__name__, nl=False, fg='green')
-                    click.echo('.')
-    except click.exceptions.Abort:
-        config.__save__()
-        print('\nSaved !')
-    else:
-        config.__save__()
-        print('Saved !')
+                    warn_for_field_type(config, field)
+
+    @click.command()
+    @click.option('--list', is_eager=True, is_flag=True, expose_value=False, callback=print_list, help='List the availaible configuration fields.')
+    def command(**kwargs):
+
+        try:
+            # save directly what is passed
+            kwargs = {field: value for (field, value) in kwargs.items() if value is not None}
+            if kwargs:
+                update_from_args(kwargs)
+            else:
+                prompt_update_all()
+                # or update all
+        except click.exceptions.Abort:
+            pass
+        finally:
+            config.__save__()
+            print('\nSaved !')
+
+    # update the arguments with all fields
+    for i, field in enumerate(list(config)):
+        command = click.option('--{}'.format(field), '-{}'.format(i), type=get_field_type(config, field), help=get_field_hint(config, field))(command)
+
+    command()

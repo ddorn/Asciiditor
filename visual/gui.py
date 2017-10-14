@@ -213,9 +213,10 @@ class Asciiditor:
         self.set_font_size(MAINFONT.font_size + dsize)
 
     def set_font_size(self, size):
-        MAINFONT.change_size(size)
+        MAINFONT.set_size(size)
         BIGFONT.set_size(size * 2)
         SMALLFONT.set_size(size * 0.75)
+        logging.info('Main font size changed to %s', MAINFONT.font_size)
         self.map_to_screen_pos.cache_clear()
         self.reset_screen()
 

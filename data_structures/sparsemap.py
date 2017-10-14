@@ -91,10 +91,16 @@ class Map:
         self.update_bounds()
 
     def update_bounds(self):
-        self.row_min = min(self.data)
-        self.row_max = max(self.data)
-        self.col_min = min(map(min, self.data.values()))
-        self.col_max = max(map(max, self.data.values()))
+        if self.data:
+            self.row_min = min(self.data)
+            self.row_max = max(self.data)
+            self.col_min = min(map(min, self.data.values()))
+            self.col_max = max(map(max, self.data.values()))
+        else:
+            self.row_min = 0
+            self.col_min = 0
+            self.row_max = 0
+            self.col_max = 0
 
 
 if __name__ == '__main__':

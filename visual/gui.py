@@ -163,6 +163,7 @@ class Asciiditor:
 
             self.offset = self.start_drag_offset + (dx, dy)
             self.map_to_screen_pos.cache_clear()
+            self.reset_screen()
 
     def render(self):
 

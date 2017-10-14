@@ -11,6 +11,9 @@ class Config(configlib.Config):
     debugger_path = ''
     __debugger_path_hint__ = "Path to your AsciiDotsDebugger"
 
+    python3_command = 'python'
+    __python3_command_hint__ = "Command to run python 3"
+
     console_log_level = 10
     __console_log_level_type__ = int
     __console_log_level_hint__ = "Debug level in the console between 10 and 50"

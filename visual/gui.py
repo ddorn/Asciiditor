@@ -294,14 +294,14 @@ class Asciiditor:
         logging.info('start loading %s', file_name)
 
         # create it if it doesn't exists
-        if not os.path.exists(file_name):
-            with open(file_name, 'w') as f:
-                f.write('')
-            logging.info("%s didn't exist and was created", file_name)
+        try:
+            with open(file_name, 'r', encoding='utf-8') as f:
+                s = f.read()
+                length = len(s)
+                map_ = Map(s)
 
-        with open(file_name, 'r', encoding='utf-8') as f:
-            map_ = Map(f.read())
-
-        logging.info('%s load success', file_name)
-
+            logging.info('%s load %s char success', file_name, length)
+        except FileNotFoundError:
+            map_ = Map()
+            logging.info("File does not exist, creating empty Map.")
         return map_

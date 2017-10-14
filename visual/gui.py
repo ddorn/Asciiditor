@@ -31,7 +31,6 @@ BIGFONT = Font(FONTNAME, DEFAULT_FONT_SIZE * 2)
 
 
 class Asciiditor:
-
     FPS = 60
 
     def __init__(self, file_name, retina):
@@ -214,7 +213,7 @@ class Asciiditor:
 
             self.dirty_rects.append(rect)
 
-    # Change cursor, font or screen
+    # Change cursor, font, offset or screen
 
     @property
     def offset(self):
@@ -234,7 +233,7 @@ class Asciiditor:
         self.cursor = Pos(x, y)
         new_rect = pygame.Rect(self.map_to_screen_rect(self.cursor))
         self.dirty_rects.append(new_rect)
-        
+
         screen_rect = self.screen.get_rect()  # type: pygame.rect.RectType
         if new_rect.x < 0:
             # the modulo part it to keep the grid aligned with what it was before,
@@ -248,7 +247,6 @@ class Asciiditor:
             self.offset -= 0, new_rect.y - new_rect.y % MAINFONT.char_size.y
         elif new_rect.bottom > screen_rect.bottom:
             self.offset += 0, ((screen_rect.bottom - new_rect.top) // MAINFONT.char_size.y - 1) * MAINFONT.char_size.y
-
 
     def change_font_size(self, dsize):
         self.set_font_size(MAINFONT.font_size + dsize)
@@ -287,7 +285,7 @@ class Asciiditor:
         with open(file_name, 'w', encoding='utf-8') as f:
             nb_bytes = f.write(self.map[:, :])
 
-        logging.info('File saved at %s. %s bytes saves', file_name, nb_bytes)
+        logging.info('File saved at %s. %s bytes saved', file_name, nb_bytes)
 
     def load(self, file_name=None):
         """Load or create the file at file_name (defaults to self.file_name."""

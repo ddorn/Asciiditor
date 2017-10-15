@@ -6,21 +6,28 @@ To use the configlib in your project, just create a file name `conf.py` awith th
     import configlib
 
     class Config(configlib.Config):
-        __config_path__ = 'my/path/to/th/config/file.json
+        __config_path__ = 'my/path/to/the/config/file.json
 
         # you can define all class attributes as you want
         # as long as they don't start and end with a bouble underscore
         foot_size = 52
+
         bald  = True
+        # you can specify the type of the field. It will be auto detected if you don't
+        __bald_type__ = bool
+        # you can also provide hint to enhance user experience
         __bald_hint__ = "Are you bald ?"
-        name = "Archibald"
+
         # and you can not define any function (except super methods)
+        name = "Archibald"
 
         # if a name starts with 'path_' or ends with '_path' there will be autocompletion
         # when the user wants to update it
         path_to_install = ''
+        # OR you can just tell the type
+        __path_to_install_type__ = configlib.path
 
-        All types will be preserved even after save and loading them
+        All basic types will be preserved even after save and loading them
         favourite_color = (230, 120, 32)
 
     if __name__ == '__main__':
@@ -33,7 +40,7 @@ To use the configlib in your project, just create a file name `conf.py` awith th
     myconfig = config.Config()
 
 
-Make with love by ddorn (https://github.com/ddorn/)
+Made with love by ddorn (https://github.com/ddorn/)
 """
 
 import os
@@ -50,6 +57,8 @@ try:
     from pygments.formatters import TerminalFormatter
 except ImportError:
     pygments = None
+    JsonLexer = None  # type: type
+    TerminalFormatter = None  # type: type
 
 HOME = str(Path.home())
 
@@ -129,7 +138,6 @@ class path(str, metaclass=MetaPathClass):
     """Class that represent a path for type hinting of your config"""
 
 
-
 class Config(object):
     __config_path__ = 'config.json'
 
@@ -159,7 +167,8 @@ class Config(object):
             supposed_type = get_field_type(self, field)
             if not isinstance(new_value, supposed_type):
                 import inspect
-                print("The field {} is a {} but should be {}.".format(field, type(new_value).__name__, supposed_type.__name__), end=' ')
+                print("The field {} is a {} but should be {}.".format(field, type(new_value).__name__,
+                                                                      supposed_type.__name__), end=' ')
                 print("You can run `python {}` to update the configuration".format(inspect.getfile(self.__class__)))
                 if raise_on_fail:
                     raise TypeError
@@ -186,15 +195,13 @@ class Config(object):
 
 
 def update_config(config):
-
     config = config(raise_on_fail=False)  # type: Config
 
     def print_list(ctx, param, value):
         if not value or ctx.resilient_parsing:
-            return
+            return param
 
         print("The following fields are available: ")
-        i = 0
         for i, field in enumerate(list(config)):
             click.echo(" - {:-3} ".format(i + 1), nl=0)
             click.echo(field + ' (', nl=0)
@@ -206,7 +213,7 @@ def update_config(config):
 
     def show_conf(ctx, param, value):
         if not value or ctx.resilient_parsing:
-            return
+            return param
 
         with open(config.__config_path__, 'r') as f:
             file = f.read()
@@ -221,11 +228,11 @@ def update_config(config):
         ctx.exit()
 
     def greet():
-        print()
-        print('Welcome !')
-        print('Press enter to keep the defaults or enter a new value to update the configuration.')
-        print('Press Ctrl+C at any time to quit and save')
-        print()
+        click.echo()
+        click.echo('Welcome !')
+        click.echo('Press enter to keep the defaults or enter a new value to update the configuration.')
+        click.echo('Press Ctrl+C at any time to quit and save')
+        click.echo()
 
     def update_from_args(kwargs):
         for field, value in kwargs.items():
@@ -258,9 +265,12 @@ def update_config(config):
 
     # all option must be eager and start with only one dash, so it doesn't conflic with any possible field
     @click.command()
-    @click.option('-list', '-l', is_eager=True, is_flag=True, expose_value=False, callback=print_list, help='List the availaible configuration fields.')
-    @click.option('-show', '-s', is_eager=True, is_flag=True, expose_value=False, callback=show_conf, help='View the configuration.')
+    @click.option('-l', '-list', is_eager=True, is_flag=True, expose_value=False, callback=print_list,
+                  help='List the availaible configuration fields.')
+    @click.option('-s', '-show', is_eager=True, is_flag=True, expose_value=False, callback=show_conf,
+                  help='View the configuration.')
     def command(**kwargs):
+        """I manage your configuration. If you call me with no argument, you will be able to set each field in an interactive prompt."""
 
         try:
             # save directly what is passed
@@ -278,6 +288,7 @@ def update_config(config):
 
     # update the arguments with all fields
     for i, field in enumerate(list(config)):
-        command = click.option('--{}'.format(field), '-{}'.format(i), type=get_field_type(config, field), help=get_field_hint(config, field))(command)
+        command = click.option('--{}'.format(field), '-{}'.format(i), type=get_field_type(config, field),
+                               help=get_field_hint(config, field))(command)
 
     command()

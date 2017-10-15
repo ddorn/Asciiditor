@@ -138,10 +138,11 @@ class Map:
         # we want only one char at a time for now
         value = value[0]
         row, col = pos
-        col = max(self.col_min, col)
 
         if value == '\n':
-            for r in reversed(list(self.data)):
+            col = max(self.col_min, col)
+
+            for r in reversed(self.data):
 
                 if r < row:  # we do nothing before
                     continue
@@ -152,7 +153,7 @@ class Map:
                         if c < col:
                             cur_row[c] = val
                         else:
-                            next_row[c - col] = val
+                            next_row[self.col_min + c - col] = val
 
                     if cur_row:
                         self.data[r] = cur_row
@@ -168,6 +169,18 @@ class Map:
                 else:  # we move the line to the bottom
                     self.data[r + 1] = self.data[r]
                     del self.data[r]
+        else:
+            if row in self.data:
+                row = self.data[row]
+
+                for c in reversed(row):
+                    # shift to the right evrything if after the insert
+                    if c >= col:  # and shift the left
+                        row[c + 1] = row[c]
+                        del row[c]
+
+            # in the existing or created space, we put our value !
+            self[pos] = value
 
 
 

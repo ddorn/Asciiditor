@@ -8,7 +8,7 @@ import click
 import config
 from visual import gui
 
-FILE_LOG_LEVEL = logging.INFO
+FILE_LOG_LEVEL = logging.DEBUG
 
 
 def setup_logging(console_level):

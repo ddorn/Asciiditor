@@ -32,6 +32,11 @@ SMALLFONT = Font(FONTNAME, DEFAULT_FONT_SIZE * 0.75)
 BIGFONT = Font(FONTNAME, DEFAULT_FONT_SIZE * 2)
 
 
+def run_cmd(cmd: str):
+    logging.info("running %s", cmd)
+    os.system(cmd)
+
+
 class Asciiditor:
     FPS = 60
 
@@ -44,11 +49,12 @@ class Asciiditor:
 
         self.screen = self.get_screen()  # type: pygame.SurfaceType
         self.clock = pygame.time.Clock()
-        self.dirty_rects = [self.screen.get_rect()]
+        self.dirty_rects = []
 
         self._offset = self.get_default_offset()
         self.start_drag_pos = None  # type: Pos
         self.start_drag_offset = None  # type: Pos
+        self.left_bar_pos = 42.1  # placeholder
 
         self.cursor = Pos(0, 0)
         self.overtype = True
@@ -63,6 +69,8 @@ class Asciiditor:
             fps = self.clock.get_fps()
             if fps < self.FPS / 2:
                 logging.warning('Low fps: %s', fps)
+
+        self.reset_screen()
 
     # Get stuff
 
@@ -91,6 +99,7 @@ class Asciiditor:
         try:
             while not self.exit:
                 self.update()
+                self.update_left_bar()
                 self.render()
                 pygame.display.update(self.dirty_rects)
                 self.clock.tick(self.FPS)
@@ -156,11 +165,13 @@ class Asciiditor:
                     if s and s.isprintable():
                         if self.overtype:
                             self.map[self.cursor.row, self.cursor.col] = s
+                            # no need to update more than where the cursor was and it's done by move.cursor
                         else:
                             self.map.insert(self.map_cursor, s)
+                            self.reset_screen()
 
                         self.move_cursor(1, 0)
-                        self.reset_screen()
+                        self.update_left_bar()
 
             elif e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1:
@@ -202,7 +213,7 @@ class Asciiditor:
             for dirt_rect in dirty_rects:
 
                 pos = Pos(pos)
-                rect = pygame.Rect(self.map_to_screen_rect(pos))
+                rect = self.map_to_screen_rect(pos)
 
                 # if we need to rerender this part of the screen
                 if rect.colliderect(dirt_rect):
@@ -217,22 +228,28 @@ class Asciiditor:
                     self.screen.blit(surf, rect)
 
                     # try to minimize the overlappings would be nice
-                    self.dirty_rects.append(rect)
+                    if not dirt_rect.contains(rect):
+                        self.dirty_rects.append(rect)
                     break
 
-        if not cursor_rendered:
+        cursor_rect = self.map_to_screen_rect(self.cursor)
+        if not cursor_rendered and self.has_dirt(cursor_rect):
             if self.overtype:
                 char = self.map[self.cursor.row, self.cursor.col]
-                rect = self.map_to_screen_rect(self.cursor)
 
                 surf = MAINFONT.render_char(char, COLORS.BACKGROUND, COLORS.TEXT)
-                self.screen.blit(surf, rect)
+                self.screen.blit(surf, cursor_rect)
             else:
-                rect = pygame.Rect(self.map_to_screen_rect(self.cursor))
+                rect = self.map_to_screen_rect(self.cursor)
                 rect.width = 2
                 self.screen.fill(COLORS.TEXT, rect)
 
-            self.dirty_rects.append(rect)
+            self.dirty_rects.append(cursor_rect)
+
+        left_bar_rect = self.get_left_bar_rect()
+        if self.has_dirt(left_bar_rect):
+            self.screen.fill(COLORS.TEXT, left_bar_rect)
+            self.dirty_rects.append(left_bar_rect)
 
     # Change cursor, font, offset or screen
 
@@ -243,9 +260,10 @@ class Asciiditor:
 
     @offset.setter
     def offset(self, value):
-        self.reset_screen()
         self.map_to_screen_pos.cache_clear()
         self._offset = value
+        self.reset_screen()
+        self.update_left_bar()
 
     @property
     def map_cursor(self):
@@ -288,6 +306,25 @@ class Asciiditor:
 
     def reset_screen(self):
         self.dirty_rects = [self.screen.get_rect()]
+        self.update_left_bar()
+
+    def update_left_bar(self):
+        """Check if the left bar has changed and if so, draw it agin on next render."""
+        pos = self.map_to_screen_pos(Pos(self.map.col_min, 0))[0] - 1
+
+        if self.left_bar_pos != pos:
+            rect = self.get_left_bar_rect()
+            self.dirty_rects.append(rect)
+            rect = rect.copy()
+            rect.x = pos
+            self.dirty_rects.append(rect)
+            self.left_bar_pos = rect.x
+
+    def get_left_bar_rect(self):
+        return pygame.Rect(self.left_bar_pos, 0, 1, self.screen.get_height())
+
+    def has_dirt(self, rect):
+        return rect.collidelist(self.dirty_rects) != -1
 
     # Convertion between the map (row, col) and screen coords
 
@@ -297,7 +334,7 @@ class Asciiditor:
         return self.offset.x + MAINFONT.char_size.x * pos.col, self.offset.y + MAINFONT.char_size.y * pos.row
 
     def map_to_screen_rect(self, pos):
-        return self.map_to_screen_pos(pos), MAINFONT.char_size
+        return pygame.Rect(self.map_to_screen_pos(pos), MAINFONT.char_size)
 
     def screen_to_map_pos(self, pos):
         return (pos[0] - self.offset.x) // MAINFONT.char_size.x, (pos[1] - self.offset.y) // MAINFONT.char_size.y
@@ -340,7 +377,3 @@ class Asciiditor:
         logging.info("Starting debugger process")
         p.start()
         logging.info("Debugger started")
-
-def run_cmd(cmd: str):
-    logging.info("running %s", cmd)
-    os.system(cmd)

@@ -8,6 +8,7 @@ class Map:
         # self.data[row][col]
         self.data = SortedDict()  # type: Dict[int, Dict[int, str]]
 
+        # they are all included
         self.row_min = 0
         self.col_min = 0
         self.row_max = 0
@@ -101,6 +102,32 @@ class Map:
             self.col_min = 0
             self.row_max = 0
             self.col_max = 0
+
+    def suppr(self, item):
+        row, col = item
+
+        # we delete the whole line, shifting everything under one to the top
+        if row not in self.data:
+            # We take the list of the value so we don't modify the dict while looping on it
+            for r in list(self.data):
+                if r < row:
+                    continue
+
+                self.data[r - 1] = self.data[r]
+                del self.data[r]
+
+        else:
+            row = self.data[row]
+            for c in list(row):
+                if c < col:
+                    continue
+                elif c == col:
+                    del row[col]
+                else:
+                    row[c - 1] = row[c]
+                    del row[c]
+
+        self.update_bounds()
 
 
 if __name__ == '__main__':

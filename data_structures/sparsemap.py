@@ -127,7 +127,51 @@ class Map:
                     row[c - 1] = row[c]
                     del row[c]
 
+            if not row:
+                del self.data[item[0]]
+
         self.update_bounds()
+
+    def insert(self, pos, value):
+        """Insert value at pos and shift everything after."""
+
+        # we want only one char at a time for now
+        value = value[0]
+        row, col = pos
+        col = max(self.col_min, col)
+
+        if value == '\n':
+            for r in reversed(list(self.data)):
+
+                if r < row:  # we do nothing before
+                    continue
+                elif r == row:  # we split the line into to
+                    cur_row = SortedDict()
+                    next_row = SortedDict()
+                    for c, val in self.data[row].items():
+                        if c < col:
+                            cur_row[c] = val
+                        else:
+                            next_row[c - col] = val
+
+                    if cur_row:
+                        self.data[r] = cur_row
+                    else:
+                        if r in self.data:
+                            del self.data[r]
+                    if next_row:
+                        self.data[r + 1] = next_row
+                    else:
+                        if r + 1 in self.data:
+                            del self.data[r + 1]
+
+                else:  # we move the line to the bottom
+                    self.data[r + 1] = self.data[r]
+                    del self.data[r]
+
+
+
+
 
 
 if __name__ == '__main__':

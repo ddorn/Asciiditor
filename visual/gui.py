@@ -125,9 +125,11 @@ class Asciiditor:
                     self.move_cursor(0, 1)
                 elif e.key == pygame.K_BACKSPACE:
                     self.move_cursor(-1, 0)
-                    del self.map[self.cursor.row, self.cursor.col]
+                    self.map.suppr((self.cursor.row, self.cursor.col))
+                    self.reset_screen()
                 elif e.key == pygame.K_DELETE:
-                    del self.map[self.cursor.row, self.cursor.col]
+                    self.map.suppr((self.cursor.row, self.cursor.col))
+                    self.reset_screen()
                 elif e.key == pygame.K_F5:
                     self.launch_debugger()
                 elif e.mod & pygame.KMOD_CTRL:

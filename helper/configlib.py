@@ -146,9 +146,10 @@ class Config(object):
 
     def __iter__(self):
         """Iterate over the fields"""
-        for attr in type(self).__dict__:
-            if is_config_field(attr):
-                yield attr
+        keys = sorted(type(self).__dict__)
+        for key in keys:
+            if is_config_field(key):
+                yield key
 
     def __load__(self, raise_on_fail=True):
         try:

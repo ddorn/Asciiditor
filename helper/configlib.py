@@ -288,7 +288,7 @@ def update_config(config):
 
     # update the arguments with all fields
     for i, field in enumerate(list(config)):
-        command = click.option('--{}'.format(field), '-{}'.format(i), type=get_field_type(config, field),
+        command = click.option('--{}'.format(field), '-{}'.format(i + 1), type=get_field_type(config, field),
                                help=get_field_hint(config, field))(command)
 
     command()

@@ -51,6 +51,7 @@ class Asciiditor:
         self.start_drag_offset = None  # type: Pos
 
         self.cursor = Pos(0, 0)
+        self.overtype = True
 
         self.exit = False
 
@@ -122,7 +123,9 @@ class Asciiditor:
                 elif e.key == pygame.K_DOWN:
                     self.move_cursor(0, 1)
                 elif e.key == pygame.K_RETURN:
-                    self.move_cursor(0, 1)
+                    self.map.insert(self.map_cursor, '\n')
+                    self.set_cursor(self.map.col_min, self.cursor.row + 1)
+                    self.reset_screen()
                 elif e.key == pygame.K_BACKSPACE:
                     self.move_cursor(-1, 0)
                     self.map.suppr((self.cursor.row, self.cursor.col))
@@ -130,6 +133,9 @@ class Asciiditor:
                 elif e.key == pygame.K_DELETE:
                     self.map.suppr((self.cursor.row, self.cursor.col))
                     self.reset_screen()
+                elif e.key == pygame.K_INSERT:
+                    self.overtype = not self.overtype
+                    self.dirty_rects.append(self.map_to_screen_rect(self.cursor))
                 elif e.key == pygame.K_F5:
                     self.launch_debugger()
                 elif e.mod & pygame.KMOD_CTRL:
@@ -148,7 +154,11 @@ class Asciiditor:
                 else:
                     s = e.unicode  # type: str
                     if s and s.isprintable():
-                        self.map[self.cursor.row, self.cursor.col] = s
+                        if self.overtype:
+                            self.map[self.cursor.row, self.cursor.col] = s
+                        else:
+                            self.map.insert(self.map_cursor, s)
+
                         self.move_cursor(1, 0)
                         self.reset_screen()
 
@@ -199,7 +209,7 @@ class Asciiditor:
 
                     bg = COLORS.BACKGROUND
                     color = COLORS.TEXT
-                    if pos == self.cursor:
+                    if pos == self.cursor and self.overtype:
                         bg, color = color, bg
                         cursor_rendered = True
 
@@ -211,11 +221,16 @@ class Asciiditor:
                     break
 
         if not cursor_rendered:
-            char = self.map[self.cursor.row, self.cursor.col]
-            rect = self.map_to_screen_rect(self.cursor)
+            if self.overtype:
+                char = self.map[self.cursor.row, self.cursor.col]
+                rect = self.map_to_screen_rect(self.cursor)
 
-            surf = MAINFONT.render_char(char, COLORS.BACKGROUND, COLORS.TEXT)
-            self.screen.blit(surf, rect)
+                surf = MAINFONT.render_char(char, COLORS.BACKGROUND, COLORS.TEXT)
+                self.screen.blit(surf, rect)
+            else:
+                rect = pygame.Rect(self.map_to_screen_rect(self.cursor))
+                rect.width = 2
+                self.screen.fill(COLORS.TEXT, rect)
 
             self.dirty_rects.append(rect)
 
@@ -223,6 +238,7 @@ class Asciiditor:
 
     @property
     def offset(self):
+        """Offset of the topright of the code vs the topright of the screen."""
         return self._offset
 
     @offset.setter
@@ -230,6 +246,11 @@ class Asciiditor:
         self.reset_screen()
         self.map_to_screen_pos.cache_clear()
         self._offset = value
+
+    @property
+    def map_cursor(self):
+        """Get the position of the cursor in the map ((row, col) instead of (x, y))."""
+        return Pos(self.cursor.row, self.cursor.col)
 
     def move_cursor(self, dx, dy):
         self.set_cursor(*(self.cursor + (dx, dy)))

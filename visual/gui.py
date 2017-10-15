@@ -1,7 +1,6 @@
 import logging
 import multiprocessing
 import os
-from concurrent.futures import process
 from functools import lru_cache
 
 import pygame
@@ -312,6 +311,7 @@ class Asciiditor:
         return map_
 
     def launch_debugger(self):
+        self.save()
         logging.info("Creating debugger procces")
         p = multiprocessing.Process(target=run_cmd, args=(self.config.debugger_command.format(file=self.file_name),))
         logging.info("Starting debugger process")

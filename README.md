@@ -1,3 +1,8 @@
+NOTE:
+This project is unfinished and I have no plans to continue working on it. 
+If your are interested in this project and would like to pursue its developement, please contact me!
+
+
 # Asciiditor
 This will be an editor for [Asciidots](www.github.com/aaronduino/asciidots), but you don't want to try it now, it is still in pre-pre-sub-alpha version.
 Come to talk on [gitter](https://gitter.im/asciidots/Lobby) ! :D
@@ -44,6 +49,13 @@ No need to comment
 - <kbd>Click</kbd>: Set the cursor position
 - <kbd>
 
+### Requirements
+
+This project has a few dependencies:
+- `pygame`
+- `sortedcontainers`
+- `click`
+- `pyreadline` if you are running Windows
 
 ### Comming soon (more or less)
 
